@@ -8,8 +8,11 @@ from ...types import ConfigType, SensorValueType
 from . import GenericSensor
 from ...exceptions import RuntimeConfigError
 
-REQUIREMENTS = ("adafruit-circuitpython-sht4x",)
+REQUIREMENTS = ("adafruit-circuitpython-sht4x","adafruit-extended-bus")
 
+CONFIG_SCHEMA = {
+    "i2c_bus_num": {"type": "integer", "required": True, "empty": False},
+}
 
 class Sensor(GenericSensor):
     """
@@ -29,10 +32,11 @@ class Sensor(GenericSensor):
     def setup_module(self) -> None:
         # pylint: disable=import-outside-toplevel,import-error
         import adafruit_sht4x  # type: ignore
-        import board  # type: ignore
-        import busio  # type: ignore
+        from adafruit_extended_bus import ExtendedI2C as I2C
 
-        i2c = busio.I2C(board.SCL, board.SDA)
+        self.bus_num: int = self.config["i2c_bus_num"]
+        i2c = I2C(self.bus_num)
+        
         self.sensor = adafruit_sht4x.SHT4x(i2c)
 
     @property
